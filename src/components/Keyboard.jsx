@@ -8,21 +8,33 @@ import {
 import { MainContext } from '../context/MainContext';
 
 function Keyboard() {
-  const { dispatch } = useContext(MainContext);
+  const { dispatch, state } = useContext(MainContext);
 
   return (
     <div>
-      <div className='key' onClick={() => dispatch('go up')}>
+      <div
+        className={`key ${state.keyDown === 'up' && 'pressed'}`}
+        onClick={() => dispatch('go up')}
+      >
         <AiOutlineArrowUp />
       </div>
       <div className='d-flex'>
-        <div className='key' onClick={() => dispatch('go left')}>
+        <div
+          className={`key ${state.keyDown === 'left' && 'pressed'}`}
+          onClick={() => dispatch('go left')}
+        >
           <AiOutlineArrowLeft />
         </div>
-        <div className='key' onClick={() => dispatch('go down')}>
+        <div
+          className={`key ${state.keyDown === 'down' && 'pressed'}`}
+          onClick={() => dispatch('go down')}
+        >
           <AiOutlineArrowDown />
         </div>
-        <div className='key' onClick={() => dispatch('go right')}>
+        <div
+          className={`key ${state.keyDown === 'right' && 'pressed'}`}
+          onClick={() => dispatch('go right')}
+        >
           <AiOutlineArrowRight />
         </div>
       </div>

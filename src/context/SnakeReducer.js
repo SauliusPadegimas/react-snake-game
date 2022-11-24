@@ -6,10 +6,22 @@ const initialState = {
   score: 0,
   direction: null,
   gameover: false,
+  keyDown: false,
+  speed: 500,
 };
 
 function SnakeReducer(state, action) {
+  // variables
+  const ifIgoUp = (some) => Boolean(some.x === state.snake[0].x && some.y === state.snake[0].y - 1);
+  const ifIgoLeft = (some) =>
+    Boolean(some.x === state.snake[0].x - 1 && some.y === state.snake[0].y);
+  const ifIgoDown = (some) =>
+    Boolean(some.x === state.snake[0].x && some.y === state.snake[0].y + 1);
+  const ifIgoRight = (some) =>
+    Boolean(some.x === state.snake[0].x + 1 && some.y === state.snake[0].y);
+
   switch (action) {
+    // &&& Restart game &&&
     case 'restart':
       const snakeX = Math.floor(Math.random() * 10);
       const snakeY = Math.floor(Math.random() * 10);
@@ -20,22 +32,64 @@ function SnakeReducer(state, action) {
         snake: [{ x: snakeX, y: snakeY }],
         food: { x: foodX, y: foodY },
       };
+
+    // &&& Handle keybord events &&&
+    case 'keyup':
+      return {
+        ...state,
+        keyDown: false,
+      };
+    case 'keydown up':
+      return {
+        ...state,
+        keyDown: 'up',
+      };
+    case 'keydown left':
+      return {
+        ...state,
+        keyDown: 'left',
+      };
+    case 'keydown down':
+      return {
+        ...state,
+        keyDown: 'down',
+      };
+    case 'keydown right':
+      return {
+        ...state,
+        keyDown: 'right',
+      };
+
+    // %%% HANDE SNAKE MOVEMENT %%%
     case 'go up':
-      // tikrina ar nepriejo sienos krasto
+      // checks if git the wall
       if (state.snake[0].y === 0) {
         return { ...state, gameover: true };
       }
-      //tikrina ar suvalge
-      if (state.food.x === state.snake[0].x && state.food.y === state.snake[0].y - 1) {
+
+      // prevents on moving to body direction
+      if (state.snake.length > 1 && state.direction === 'go down') {
+        return { ...state };
+      }
+
+      // checks if haven't bitten tail
+      if (state.snake.some((coord) => ifIgoUp(coord))) {
+        return { ...state, gameover: true };
+      }
+
+      // checks if eaten food
+      if (ifIgoUp(state.food)) {
         const { foodX, foodY } = getFoodCoord(state.snake);
         return {
+          ...state,
           food: { x: foodX, y: foodY },
           score: state.score + 1,
           snake: [{ x: state.snake[0].x, y: state.snake[0].y - 1 }, ...state.snake],
           direction: 'go up',
+          speed: state.speed - 10,
         };
       }
-      // jei nesuvalge
+      // if not eaten food
       else {
         const newArr = [{ x: state.snake[0].x, y: state.snake[0].y - 1 }, ...state.snake];
         newArr.pop();
@@ -46,21 +100,33 @@ function SnakeReducer(state, action) {
         };
       }
     case 'go left':
-      // tikrina ar nepriejo sienos krasto
+      // checks if hit the wall
       if (state.snake[0].x === 0) {
         return { ...state, gameover: true };
       }
-      //tikrina ar suvalge
-      if (state.food.x === state.snake[0].x - 1 && state.food.y === state.snake[0].y) {
+
+      // prevents on moving to body direction
+      if (state.snake.length > 1 && state.direction === 'go right') {
+        return { ...state };
+      }
+
+      // checks if haven't bitten tail
+      if (state.snake.some((coord) => ifIgoLeft(coord))) {
+        return { ...state, gameover: true };
+      }
+      // checks if eaten food
+      if (ifIgoLeft(state.food)) {
         const { foodX, foodY } = getFoodCoord(state.snake);
         return {
+          ...state,
           food: { x: foodX, y: foodY },
           score: state.score + 1,
           snake: [{ x: state.snake[0].x - 1, y: state.snake[0].y }, ...state.snake],
           direction: 'go left',
+          speed: state.speed - 10,
         };
       }
-      //tikrina ar suvalge
+      // checks if eaten food
       else {
         const newArr = [{ x: state.snake[0].x - 1, y: state.snake[0].y }, ...state.snake];
         newArr.pop();
@@ -71,21 +137,33 @@ function SnakeReducer(state, action) {
         };
       }
     case 'go down':
-      // tikrina ar nepriejo sienos krasto
+      // checks if hit the wall
       if (state.snake[0].y === 9) {
         return { ...state, gameover: true };
       }
-      //tikrina ar suvalge
-      if (state.food.x === state.snake[0].x && state.food.y === state.snake[0].y + 1) {
+
+      // prevents on moving to body direction
+      if (state.snake.length > 1 && state.direction === 'go up') {
+        return { ...state };
+      }
+
+      // checks if haven't bitten tail
+      if (state.snake.some((coord) => ifIgoDown(coord))) {
+        return { ...state, gameover: true };
+      }
+      // checks if eaten food
+      if (ifIgoDown(state.food)) {
         const { foodX, foodY } = getFoodCoord(state.snake);
         return {
+          ...state,
           food: { x: foodX, y: foodY },
           score: state.score + 1,
           snake: [{ x: state.snake[0].x, y: state.snake[0].y + 1 }, ...state.snake],
           direction: 'go down',
+          speed: state.speed - 10,
         };
       }
-      // jei nesuvalge
+      // if not eaten food
       else {
         const newArr = [{ x: state.snake[0].x, y: state.snake[0].y + 1 }, ...state.snake];
         newArr.pop();
@@ -97,21 +175,33 @@ function SnakeReducer(state, action) {
       }
 
     case 'go right':
-      // tikrina ar nepriejo sienos krasto
+      // checks if hit the wall
       if (state.snake[0].x === 9) {
         return { ...state, gameover: true };
       }
-      //tikrina ar suvalge
-      if (state.food.x === state.snake[0].x + 1 && state.food.y === state.snake[0].y) {
+      // prevents on moving to body direction
+      if (state.snake.length > 1 && state.direction === 'go left') {
+        console.log('suka i kuna');
+        return { ...state };
+      }
+
+      // checks if haven't bitten tail
+      if (state.snake.some((coord) => ifIgoRight(coord))) {
+        return { ...state, gameover: true };
+      }
+      // checks if eaten food
+      if (ifIgoRight(state.food)) {
         const { foodX, foodY } = getFoodCoord(state.snake);
         return {
+          ...state,
           food: { x: foodX, y: foodY },
           score: state.score + 1,
           snake: [{ x: state.snake[0].x + 1, y: state.snake[0].y }, ...state.snake],
           direction: 'go right',
+          speed: state.speed - 10,
         };
       }
-      // jei nesuvalge
+      // if not eaten food
       else {
         const newArr = [{ x: state.snake[0].x + 1, y: state.snake[0].y }, ...state.snake];
         newArr.pop();

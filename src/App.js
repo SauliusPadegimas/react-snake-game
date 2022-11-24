@@ -17,51 +17,65 @@ function App() {
       if (!state.gameover) {
         dispatch(state.direction);
       }
-    }, 500);
+    }, state.speed);
     return () => clearInterval(interval);
   }, [state.direction, state.gameover]);
 
-  function handleKeyDown(e) {
-    console.log('e.target ===', e.key);
-    switch (e.key) {
-      case 'ArrowDown':
+  useEffect(() => {
+    const keyDownHandler = (event) => {
+      if (event.key === 'ArrowDown' && !state.gameover) {
+        event.preventDefault();
         dispatch('go down');
-        break;
-      case 'ArrowUp':
+        dispatch('keydown down');
+      }
+      if (event.key === 'ArrowUp' && !state.gameover) {
+        event.preventDefault();
         dispatch('go up');
-        break;
-      case 'ArrowLeft':
+        dispatch('keydown up');
+      }
+      if (event.key === 'ArrowLeft' && !state.gameover) {
+        event.preventDefault();
         dispatch('go left');
-        break;
-      case 'ArrowRight':
+        dispatch('keydown left');
+      }
+      if (event.key === 'ArrowRight' && !state.gameover) {
+        event.preventDefault();
         dispatch('go right');
-        break;
+        dispatch('keydown right');
+      }
+    };
 
-      default:
-        break;
-    }
-  }
+    const keyUpHandler = () => {
+      dispatch('keyup');
+    };
+
+    document.addEventListener('keydown', keyDownHandler);
+    document.addEventListener('keyup', keyUpHandler);
+
+    return () => {
+      document.removeEventListener('keydown', keyDownHandler);
+      document.removeEventListener('keyup', keyUpHandler);
+    };
+  }, [state.gameover]);
 
   return (
     <MainContext.Provider value={{ state, dispatch }}>
-      <div tabIndex={3} onKeyDown={handleKeyDown}>
-        <div className='d-flex game__container'>
-          <div className='controls'>
-            {!state.gameover && <Keyboard />}
-            {state.gameover && <h1 className='gameover'>Game Over</h1>}
-            <h1>Score: {state.score}</h1>
-            {state.gameover && (
-              <button className='button' onClick={() => dispatch('restart')}>
-                RESTART
-              </button>
-            )}
-          </div>
+      <div className='d-flex game__container'>
+        <div className='controls'>
+          {!state.gameover && <Keyboard />}
+          {state.gameover && <h1 className='gameover'>Game Over</h1>}
+          <h1>Score: {state.score}</h1>
+          {state.gameover && (
+            <button className='button' onClick={() => dispatch('restart')}>
+              RESTART
+            </button>
+          )}
+        </div>
 
-          <div className='board'>
-            {fieldsArr.map((box, i) => (
-              <Box x={box.x} y={box.y} key={i} />
-            ))}
-          </div>
+        <div className='board'>
+          {fieldsArr.map((box, i) => (
+            <Box x={box.x} y={box.y} key={i} />
+          ))}
         </div>
       </div>
     </MainContext.Provider>
