@@ -79,7 +79,10 @@ function SnakeReducer(state, action) {
 
       // checks if eaten food
       if (ifIgoUp(state.food)) {
-        const { foodX, foodY } = getFoodCoord(state.snake);
+        const { foodX, foodY } = getFoodCoord([
+          { x: state.snake[0].x, y: state.snake[0].y - 1 },
+          ...state.snake,
+        ]);
         return {
           ...state,
           food: { x: foodX, y: foodY },
